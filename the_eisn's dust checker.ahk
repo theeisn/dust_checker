@@ -94,14 +94,15 @@ main_function() {
 	dustval_84_20q := get_dust_value(dustval_84_20q)
 
 	if (dustval_84 > 0) {
-		title := "Dust"
+		title := " Dust"
 		text = ilvl 84: %dustval_84% `nilvl 84 20q: %dustval_84_20q%
 	}
 	else {
-		title := "Dust"
+		title := " Dust"
 		text = Item unknown or unidentified
 	}
-		
+
+	text := " " . text . " "
 
 	hToolTip := CustomToolTip(text, , , title, 0, false, 0xFFFFFF, 0x6e3587, "Segoe UI bold", "s18", false, 3000)
 
