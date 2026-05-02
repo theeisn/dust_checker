@@ -77,7 +77,7 @@ main_function() {
 
 	; if Foulborn then remove that from the name
 	If InStr(item_name, "Foulborn") {
-		item_name := StrReplace (item_name, "Foulborn ")
+		item_name := StrReplace(item_name, "Foulborn ")
 	}
 
 	; when the csv file is loaded it's with 1 row per line
