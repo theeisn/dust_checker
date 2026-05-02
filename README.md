@@ -7,7 +7,7 @@ I wanted an easy to use tool that can also be customized to make the tooltip big
 * AutoHotkey v1.1 installed
 
 **How to install**
-1. Download dust_check_v0.1 from the [releases](https://github.com/theeisn/dust_checker/releases) page
+1. Download the latest Source Code archive from the [releases](https://github.com/theeisn/dust_checker/releases) page
 2. Extract everything in the same folder
 3. Double click on the_eisn's dust checker.ahk
 
