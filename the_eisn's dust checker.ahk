@@ -6,12 +6,12 @@
 
 
 ; enabled only while developing the script
-;/*#If WinActive("ahk_exe sublime_text.exe")
+;#If WinActive("ahk_exe sublime_text.exe")
 ;    ~^s::
 ;		Reload
 ;    Return
 ;#If
-;*/
+
 
 ; get shorthand value of dust
 ; 2300000 -> 2.3M
@@ -65,6 +65,7 @@ main_function() {
 	Send, ^c
 	item_full = %Clipboard%
 
+
 	; at this point copied has the entire item description, but it's on one line
 	item_lines := StrSplit(item_full, "`n")
 
@@ -90,18 +91,48 @@ main_function() {
 	dustval_84 := CSV_ReadCell("de_dust", result[1], 3)
 	dustval_84_20q := CSV_ReadCell("de_dust", result[1], 4)
 
+	; get shorthand version
 	dustval_84 := get_dust_value(dustval_84)
 	dustval_84_20q := get_dust_value(dustval_84_20q)
 
 	if (dustval_84 > 0) {
 		title := " Dust"
-		text = ilvl 84: %dustval_84% `nilvl 84 20q: %dustval_84_20q%
+		text =  ilvl 84: %dustval_84% `n ilvl 84 20q: %dustval_84_20q%
 	}
 	else {
-		title := " Dust"
-		text = Item unknown or unidentified
-	}
+		CSV_Load("de_uniques.csv", "de_uniques")
+		TotalRows := CSV_TotalRows("de_uniques")
+		
 
+		row := 1
+
+		output_all := 
+
+		while (row <= TotalRows) {
+			row_line := CSV_ReadRow("de_uniques", row)
+			row_text := StrSplit(row_line, ",")
+
+			row_class := row_text[1]
+			row_name := row_text[2]
+
+			if (InStr(row_class, item_name)) {
+				result := CSV_MatchCell("de_dust", row_name)
+				result := StrSplit(result, ",")
+				
+				dustval := CSV_ReadCell("de_dust", result[1], 3)
+				dustval := get_dust_value(dustval)
+
+				output_all := output_all "`n "  row_name ": " dustval
+			}
+
+
+			row++
+		}
+
+		title := " Dust"
+		text = %output_all%
+	}
+	
 	text := " " . text . " "
 
 	hToolTip := CustomToolTip(text, , , title, 0, false, 0xFFFFFF, 0x6e3587, "Segoe UI bold", "s18", false, 3000)
