@@ -13,6 +13,15 @@
 ;#If
 
 
+
+
+; apply only during the game
+SetTitleMatchMode, 3
+#IfWinActive Path of Exile
+#include CSV.ahk
+#include Maths.ahk
+
+
 ; get shorthand value of dust
 ; 2300000 -> 2.3M
 ; 125000 -> 125k
@@ -51,11 +60,6 @@ get_dust_value(str_dust) {
 	
 }
 
-; apply only during the game
-SetTitleMatchMode, 3
-#IfWinActive Path of Exile
-#include CSV.ahk
-
 main_function() {
 	; load dust values from csv file
 	CSV_Load("de_dust.csv", "de_dust")
@@ -73,8 +77,27 @@ main_function() {
 	; TO-DO: exception process for unidentified
 	item_name := item_lines[3]
 
+	; find the line that has Requirements as it's not a fixed position like the item's name
+	; next line /should/ be the required level
+	max_lines := item_lines.MaxIndex()
+	counter := 1
+	lvl_found := 0
+
+	While (item_lines[counter]) {
+		if Instr(item_lines[counter], "Requirements:") {
+			lvl_found := counter
+		}
+		counter++
+	}	
+
+	lvl_found++
+	req_level := item_lines[lvl_found]
+
 	; strip potential extra characters
 	item_name := RegExReplace(item_name,"\.? *(\n|\r)+","")
+	item_req_level := RegExReplace(req_level,"\.? *(\n|\r)+","")
+
+	item_req_level := StrSplit(item_req_level, " ")[2]
 
 	; if Foulborn then remove that from the name
 	If InStr(item_name, "Foulborn") {
@@ -86,8 +109,11 @@ main_function() {
 	result := CSV_MatchCell("de_dust", item_name)
 	result := StrSplit(result, ",")
 
+
+
 	; finds the row that has the cell containing the unique name
 	; afterwards gets the values on the 3rd and 4th columns
+	val := CSV_ReadCell("de_dust", result[1], 2)
 	dustval_84 := CSV_ReadCell("de_dust", result[1], 3)
 	dustval_84_20q := CSV_ReadCell("de_dust", result[1], 4)
 
@@ -96,7 +122,28 @@ main_function() {
 	dustval_84_20q := get_dust_value(dustval_84_20q)
 
 	if (dustval_84 > 0) {
-		title := " Dust"
+
+		; calculate the tier
+		compare := item_req_level - 1
+		tier_coefficient := round(val / SM_Pow("1.03", compare),2)
+
+		
+		Switch tier_coefficient {
+			Case 1    : tier := "Tier 5"
+			Case 1.25 : tier := "Tier 4"
+			Case 2    : tier := "Tier 3"
+			Case 6    : tier := "Tier 2"
+			Case 25   : tier := "Tier 1"
+			Case 100  : tier := "Tier 0"
+			Case 200  : tier := "Fishing Tier 0"
+		}
+
+		if tier {
+			title := " " . tier	
+		} else {
+			title := " Dust"
+		}
+		
 		text =  ilvl 84: %dustval_84% `n ilvl 84 20q: %dustval_84_20q%
 	}
 	else {
